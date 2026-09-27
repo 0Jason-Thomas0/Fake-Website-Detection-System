@@ -1,0 +1,38 @@
+{
+  "best_model": "Random Forest",
+  "models": [
+    {
+      "name": "Random Forest",
+      "accuracy": 100.0,
+      "precision": 100.0,
+      "recall": 100.0,
+      "f1_score": 100.0,
+      "roc_auc": 100.0,
+      "cv_mean": 100.0,
+      "cv_std": 0.0
+    },
+    {
+      "name": "Decision Tree",
+      "accuracy": 100.0,
+      "precision": 100.0,
+      "recall": 100.0,
+      "f1_score": 100.0,
+      "roc_auc": 100.0,
+      "cv_mean": 100.0,
+      "cv_std": 0.0
+    },
+    {
+      "name": "Logistic Regression",
+      "accuracy": 100.0,
+      "precision": 100.0,
+      "recall": 100.0,
+      "f1_score": 100.0,
+      "roc_auc": 100.0,
+      "cv_mean": 100.0,
+      "cv_std": 0.0
+    }
+  ],
+  "feature_count": 13,
+  "train_samples": 4000,
+  "test_samples": 1000
+}
