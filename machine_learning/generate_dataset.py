@@ -1,8 +1,8 @@
 """
 Synthetic Phishing Dataset Generator
 =====================================
-Generates a realistic phishing/legitimate URL dataset (~5000 samples).
-Run this only if you don't have a real dataset in dataset/phishing.csv.
+Builds a balanced set with overlapping feature space so models
+cannot score a perfect 100% on the hold-out set.
 
 Usage:
     python generate_dataset.py
@@ -13,108 +13,123 @@ import numpy as np
 import pandas as pd
 from feature_extractor import extract_features
 
-# ── Seed for reproducibility ──────────────────────────────────────────────────
 np.random.seed(42)
 
-# ── Sample URL pools ──────────────────────────────────────────────────────────
-
-LEGITIMATE_URLS = [
+# Easy legitimate: HTTPS, known brands, clean hostnames
+EASY_LEGIT = [
     "https://www.google.com/search?q=python",
     "https://github.com/openai/gpt-4",
     "https://stackoverflow.com/questions/tagged/python",
     "https://www.wikipedia.org/wiki/Machine_learning",
-    "https://www.amazon.com/dp/B09G3HRMVB",
     "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    "https://twitter.com/home",
-    "https://www.linkedin.com/in/example",
     "https://docs.python.org/3/library/os.html",
-    "https://flask.palletsprojects.com/en/2.3.x/",
     "https://scikit-learn.org/stable/modules/tree.html",
-    "https://www.microsoft.com/en-us/windows",
     "https://developer.mozilla.org/en-US/docs/Web",
-    "https://www.coursera.org/learn/machine-learning",
-    "https://www.kaggle.com/datasets",
-    "https://pytorch.org/tutorials/",
     "https://www.bbc.com/news/technology",
-    "https://www.nytimes.com/section/technology",
-    "https://medium.com/towards-data-science",
     "https://arxiv.org/abs/2303.08774",
 ]
 
-PHISHING_URLS = [
+# Hard legitimate: hyphens, digits, login paths, occasional HTTP
+HARD_LEGIT = [
+    "https://accounts.google.com/signin/v2/identifier",
+    "https://www.paypal.com/signin",
+    "https://secure.bankofamerica.com/login/sign-in/signOnV2Screen.go",
+    "http://neverssl.com/",
+    "https://en.wikipedia.org/wiki/Two-factor_authentication",
+    "https://support.apple.com/en-us/HT204658",
+    "https://www.amazon.com/gp/your-account/order-history",
+    "https://login.microsoftonline.com/",
+    "https://github.com/login",
+    "https://www.irs.gov/payments/pay-your-taxes",
+]
+
+# Easy phishing: IP, no HTTPS, bait keywords
+EASY_PHISH = [
     "http://192.168.1.100/paypal-login/verify.php",
-    "http://paypal-secure-login.com/account/confirm",
-    "http://amazon-update-account.xyz/signin?redirect=billing",
-    "http://google-account-verify.tk/login.html",
-    "http://secure-banking-update.info/wells-fargo/login",
-    "http://apple-id-suspended.com/verify-now",
-    "http://ebay-customer-support.net/signin@ebay",
     "http://123.45.67.89/phishing/bank-login",
-    "http://free-winner-prize.click/claim-now",
-    "http://account-suspended-alert.com/recover",
-    "http://192.0.2.1/paypal/login/verify?user=1234",
-    "http://secure-paypal-confirm.top/update-billing",
-    "http://www.microsoft-alert.xyz/windows-support-warning",
-    "http://urgent-account-update.pw/banking/wells-fargo",
-    "http://validate-amazon-prime.tk/account?session=abc123",
-    "http://support-google-recovery.ml/verify-identity",
-    "http://login-secure-verify-paypal.info/confirm.php",
     "http://10.0.0.1/bank/login/secure@credentials",
+    "http://free-winner-prize.click/claim-now",
     "http://limited-offer-free-iphone.click/winner?id=9",
-    "http://apple-account-suspended.ga/id/recover",
+    "http://account-suspended-alert.com/recover",
+    "http://login-secure-verify-paypal.info/confirm.php",
+    "http://urgent-account-update.pw/banking/wells-fargo",
+]
+
+# Hard phishing: HTTPS, no IP, looks closer to real sites
+HARD_PHISH = [
+    "https://paypal-secure-login.com/account/confirm",
+    "https://www.paypa1.com/signin",
+    "https://apple-id-support.help/verify",
+    "https://accounts.g00gle.com/signin",
+    "https://login.micros0ftonline.com/",
+    "https://secure-amazon-update.net/billing",
+    "https://www.bankofamerica-secure.com/login",
+    "https://github-security-alert.com/session",
+    "https://www.wikipedia-reset.org/wiki/login",
+    "https://docs-python.org/account/recover",
 ]
 
 
+def _jitter_legit(url: str) -> str:
+    if np.random.random() > 0.55:
+        url += f"/page/{np.random.randint(1, 400)}"
+    if np.random.random() > 0.8:
+        url += f"?ref={np.random.randint(10, 9999)}"
+    return url
+
+
+def _jitter_phish(url: str) -> str:
+    roll = np.random.random()
+    if roll < 0.25:
+        url = url.replace("login", f"login{np.random.randint(10, 99)}", 1)
+    elif roll < 0.5:
+        url += f"?id={np.random.randint(1000, 9999)}"
+    elif roll < 0.7:
+        url += f"&session={np.random.randint(100000, 999999)}"
+    return url
+
+
 def generate_legitimate_url() -> str:
-    """Generate a synthetic legitimate URL."""
-    base = np.random.choice(LEGITIMATE_URLS)
-    # Occasionally add minor path variations
-    if np.random.random() > 0.6:
-        base += f"/page/{np.random.randint(1, 100)}"
-    return base
+    # ~35% hard legit so features overlap with phishing
+    pool = HARD_LEGIT if np.random.random() < 0.35 else EASY_LEGIT
+    return _jitter_legit(np.random.choice(pool))
 
 
 def generate_phishing_url() -> str:
-    """Generate a synthetic phishing URL with random variations."""
-    base = np.random.choice(PHISHING_URLS)
-
-    # Randomly mutate to add variety
-    mutations = [
-        lambda u: u.replace("login", f"login{np.random.randint(10, 999)}"),
-        lambda u: u + f"?id={np.random.randint(1000, 9999)}",
-        lambda u: u + f"&token={np.random.randint(100000, 999999)}",
-        lambda u: u,  # keep as-is
-    ]
-    mutate = np.random.choice(mutations)
-    return mutate(base)
+    # ~45% hard phishing so HTTPS / clean hosts appear in the fake class
+    pool = HARD_PHISH if np.random.random() < 0.45 else EASY_PHISH
+    return _jitter_phish(np.random.choice(pool))
 
 
 def build_dataset(n_legitimate: int = 2500, n_phishing: int = 2500) -> pd.DataFrame:
     """Build a balanced dataset of legitimate (0) and phishing (1) samples."""
     print(f"Generating {n_legitimate} legitimate URLs...")
-    legit_records = []
+    records = []
     for _ in range(n_legitimate):
-        url = generate_legitimate_url()
-        feats = extract_features(url)
-        feats["label"] = 0  # 0 = Legitimate
-        legit_records.append(feats)
+        feats = extract_features(generate_legitimate_url())
+        feats["label"] = 0
+        records.append(feats)
 
     print(f"Generating {n_phishing} phishing URLs...")
-    phish_records = []
     for _ in range(n_phishing):
-        url = generate_phishing_url()
-        feats = extract_features(url)
-        feats["label"] = 1  # 1 = Phishing / Fake
-        phish_records.append(feats)
+        feats = extract_features(generate_phishing_url())
+        feats["label"] = 1
+        records.append(feats)
 
-    df = pd.DataFrame(legit_records + phish_records)
+    df = pd.DataFrame(records)
     df = df.sample(frac=1, random_state=42).reset_index(drop=True)
 
-    print(f"\nDataset Summary:")
+    # Small label noise so the problem is not linearly perfect
+    flip_n = max(1, int(len(df) * 0.04))
+    flip_idx = np.random.choice(df.index, size=flip_n, replace=False)
+    df.loc[flip_idx, "label"] = 1 - df.loc[flip_idx, "label"]
+
+    print("\nDataset Summary:")
     print(f"  Total samples : {len(df)}")
     print(f"  Legitimate    : {(df['label'] == 0).sum()}")
     print(f"  Phishing      : {(df['label'] == 1).sum()}")
     print(f"  Features      : {df.shape[1] - 1}")
+    print(f"  Label flips   : {flip_n}")
     return df
 
 
@@ -126,4 +141,4 @@ if __name__ == "__main__":
 
     df = build_dataset(n_legitimate=2500, n_phishing=2500)
     df.to_csv(output_path, index=False)
-    print(f"\n✅ Dataset saved to: {output_path}")
+    print(f"\n[OK] Dataset saved to: {output_path}")

@@ -22,9 +22,12 @@ export default function Detection() {
 
   // Pre-fill URL if navigated from home
   useEffect(() => {
-    if (location.state?.url) {
-      setUrl(location.state.url)
-      setTimeout(() => handleAnalyze(location.state.url), 200)
+    const fromState = location.state?.url
+    const fromQuery = new URLSearchParams(location.search).get('url')
+    const initial = fromState || fromQuery
+    if (initial) {
+      setUrl(initial)
+      setTimeout(() => handleAnalyze(initial), 200)
     }
   }, [])   // eslint-disable-line
 
@@ -62,27 +65,13 @@ export default function Detection() {
       <div className="container" style={{ maxWidth: 860 }}>
 
         {/* Page Header */}
-        <div style={{ textAlign: 'center', marginBottom: 48 }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '6px 16px',
-            background: 'rgba(0,212,255,0.08)',
-            border: '1px solid rgba(0,212,255,0.2)',
-            borderRadius: 100, marginBottom: 20,
-            fontSize: '0.78rem', fontWeight: 600,
-            color: 'var(--cyan)', letterSpacing: 2, textTransform: 'uppercase',
-          }}>
-            🔍 URL Scanner
-          </div>
-          <h1 style={{
-            fontFamily: 'Orbitron, monospace',
-            fontSize: 'clamp(1.6rem, 4vw, 2.5rem)',
-            fontWeight: 800, marginBottom: 12,
-          }}>
-            Fake Website <span className="gradient-text">Detection</span>
+        <div style={{ marginBottom: 40 }}>
+          <div className="kicker">URL scanner</div>
+          <h1 style={{ fontSize: 'clamp(1.7rem, 4vw, 2.4rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 10 }}>
+            Classify one URL
           </h1>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '1rem', maxWidth: 540, margin: '0 auto' }}>
-            Enter any URL below. Our AI model will analyze 13 features and classify it as legitimate or phishing.
+          <p style={{ color: 'var(--text-secondary)', maxWidth: 540 }}>
+            Thirteen lexical features, then the deployed Random Forest. The page behind the link is never fetched.
           </p>
         </div>
 
@@ -104,7 +93,7 @@ export default function Detection() {
               }}
               id={`example-${label.toLowerCase().replace(' ', '-')}`}
             >
-              {type === 'fake' ? '⚠' : '✓'} {label}
+              {label}
             </button>
           ))}
         </div>
@@ -149,7 +138,7 @@ export default function Detection() {
                     Analyzing...
                   </>
                 ) : (
-                  '🔍 Analyze'
+                  'Analyze'
                 )}
               </button>
             </div>
@@ -162,7 +151,7 @@ export default function Detection() {
                 borderRadius: 8, color: 'var(--red)',
                 fontSize: '0.88rem',
               }}>
-                ⚠ {error}
+                {error}
               </div>
             )}
           </form>
@@ -192,9 +181,11 @@ export default function Detection() {
                 <div style={{
                   position: 'absolute', inset: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '1.5rem',
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.7rem',
+                  color: 'var(--cyan)',
                 }}>
-                  🔍
+                  SCAN
                 </div>
               </div>
               <p style={{ color: 'var(--cyan)', fontWeight: 600, marginBottom: 4 }}>Analyzing URL...</p>
@@ -227,7 +218,7 @@ export default function Detection() {
                     border: '1px solid rgba(0,212,255,0.2)',
                     borderRadius: 8,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontFamily: 'Orbitron, monospace',
+                    fontFamily: 'var(--font-mono)',
                     fontSize: '0.7rem',
                     color: 'var(--cyan)',
                     fontWeight: 700,

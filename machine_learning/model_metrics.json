@@ -3,33 +3,33 @@
   "models": [
     {
       "name": "Random Forest",
-      "accuracy": 100.0,
-      "precision": 100.0,
-      "recall": 100.0,
-      "f1_score": 100.0,
-      "roc_auc": 100.0,
-      "cv_mean": 100.0,
-      "cv_std": 0.0
+      "accuracy": 96.4,
+      "precision": 96.22,
+      "recall": 96.61,
+      "f1_score": 96.41,
+      "roc_auc": 96.11,
+      "cv_mean": 95.85,
+      "cv_std": 0.53
     },
     {
       "name": "Decision Tree",
-      "accuracy": 100.0,
-      "precision": 100.0,
-      "recall": 100.0,
-      "f1_score": 100.0,
-      "roc_auc": 100.0,
-      "cv_mean": 100.0,
-      "cv_std": 0.0
+      "accuracy": 95.7,
+      "precision": 94.73,
+      "recall": 96.81,
+      "f1_score": 95.76,
+      "roc_auc": 96.27,
+      "cv_mean": 95.32,
+      "cv_std": 0.69
     },
     {
       "name": "Logistic Regression",
-      "accuracy": 100.0,
-      "precision": 100.0,
-      "recall": 100.0,
-      "f1_score": 100.0,
-      "roc_auc": 100.0,
-      "cv_mean": 100.0,
-      "cv_std": 0.0
+      "accuracy": 92.7,
+      "precision": 94.03,
+      "recall": 91.22,
+      "f1_score": 92.6,
+      "roc_auc": 95.81,
+      "cv_mean": 92.88,
+      "cv_std": 0.69
     }
   ],
   "feature_count": 13,

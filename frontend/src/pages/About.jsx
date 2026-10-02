@@ -15,12 +15,12 @@ const FEATURES_USED = [
 ]
 
 const WORKFLOW = [
-  { icon: '📦', step: 'Dataset', desc: 'Phishing URL dataset with real feature patterns' },
-  { icon: '🧹', step: 'Preprocessing', desc: 'Normalize, clean, balance classes' },
-  { icon: '⚙',  step: 'Feature Extraction', desc: '13 URL-based features extracted per sample' },
-  { icon: '🤖', step: 'Model Training', desc: 'RF, DT & LR trained and compared' },
-  { icon: '📊', step: 'Evaluation', desc: 'Accuracy, F1, ROC-AUC, Confusion Matrix' },
-  { icon: '💾', step: 'Deployment', desc: 'Best model saved via Joblib → served via Flask API' },
+  { n: '01', step: 'Dataset', desc: 'Balanced phishing and legitimate URL samples with overlapping features' },
+  { n: '02', step: 'Preprocessing', desc: 'Clean columns, stratify the split, scale only for Logistic Regression' },
+  { n: '03', step: 'Feature extraction', desc: '13 URL-based features per sample — no page fetch' },
+  { n: '04', step: 'Training', desc: 'Random Forest, Decision Tree, and Logistic Regression compared on F1' },
+  { n: '05', step: 'Evaluation', desc: 'Accuracy, precision, recall, F1, ROC-AUC, 5-fold CV' },
+  { n: '06', step: 'Deploy', desc: 'F1-best pickle served by Flask; the other two stay in Lab' },
 ]
 
 export default function About() {
@@ -41,46 +41,21 @@ export default function About() {
       <div className="container" style={{ maxWidth: 1000 }}>
 
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 64 }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            padding: '6px 16px', marginBottom: 20,
-            background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.2)',
-            borderRadius: 100, fontSize: '0.78rem', fontWeight: 600,
-            color: 'var(--cyan)', letterSpacing: 2, textTransform: 'uppercase',
-          }}>
-            ℹ About The Project
-          </div>
-          <h1 style={{ fontFamily: 'Orbitron, monospace', fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 800, marginBottom: 16 }}>
-            About <span className="gradient-text">PhishGuard AI</span>
+        <div style={{ marginBottom: 48 }}>
+          <div className="kicker">About</div>
+          <h1 style={{ fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 12 }}>
+            How PhishGuard classifies URLs
           </h1>
-          <p style={{ color: 'var(--text-secondary)', maxWidth: 640, margin: '0 auto', lineHeight: 1.7 }}>
-            A B.Tech 3rd Year project demonstrating the integration of Artificial Intelligence
-            with Cybersecurity to detect phishing and fake websites using supervised Machine Learning.
+          <p style={{ color: 'var(--text-secondary)', maxWidth: 640, lineHeight: 1.7 }}>
+            Supervised models on 13 lexical URL features. Detects phishing from the string alone —
+            no fetching the destination, no third-party reputation APIs.
           </p>
-        </div>
-
-        {/* Project Info Card */}
-        <div className="glass-card" style={{ padding: 36, marginBottom: 32 }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 28 }}>
-            {[
-              { label: 'Project Type', value: 'AI + Cybersecurity' },
-              { label: 'Academic Level', value: 'B.Tech 3rd Year' },
-              { label: 'Department', value: 'AI & Data Science' },
-              { label: 'Project Version', value: '1.0' },
-            ].map(({ label, value }) => (
-              <div key={label}>
-                <div style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 6 }}>{label}</div>
-                <div style={{ fontSize: '1.05rem', fontWeight: 600, color: 'var(--text-primary)' }}>{value}</div>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* ML Model Metrics */}
         <section style={{ marginBottom: 48 }}>
-          <h2 style={{ fontFamily: 'Orbitron, monospace', fontSize: '1.3rem', fontWeight: 700, marginBottom: 24 }}>
-            🤖 Model Performance
+          <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '1.3rem', fontWeight: 700, marginBottom: 24 }}>
+            Hold-out performance
           </h2>
 
           {loadingMetrics ? (
@@ -90,7 +65,7 @@ export default function About() {
             </div>
           ) : !metrics ? (
             <div className="glass-card" style={{ padding: 36, textAlign: 'center', color: 'var(--yellow)', border: '1px solid rgba(255,187,0,0.2)' }}>
-              ⚠ Model metrics not available. Run <code style={{ color: 'var(--cyan)' }}>python train_model.py</code> first.
+              Metrics not available. Run <code style={{ color: 'var(--cyan)' }}>python train_model.py</code> first.
             </div>
           ) : (
             <>
@@ -102,10 +77,10 @@ export default function About() {
                   border: '1px solid rgba(0,212,255,0.25)',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-                    <span style={{ fontSize: '1.4rem' }}>🏆</span>
+                    <span className="kicker" style={{ marginBottom: 0 }}>Best F1</span>
                     <div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', letterSpacing: 2, textTransform: 'uppercase' }}>Best Model</div>
-                      <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '1.2rem', fontWeight: 700, color: 'var(--cyan)' }}>{best.name}</div>
+                      <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.2rem', fontWeight: 700, color: 'var(--cyan)' }}>{best.name}</div>
                     </div>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 16 }}>
@@ -117,7 +92,7 @@ export default function About() {
                       { label: 'ROC-AUC',   value: `${best.roc_auc}%` },
                     ].map(({ label, value }) => (
                       <div key={label} style={{ textAlign: 'center' }}>
-                        <div style={{ fontFamily: 'Orbitron, monospace', fontSize: '1.4rem', fontWeight: 700, color: 'var(--green)', marginBottom: 4 }}>{value}</div>
+                        <div style={{ fontFamily: 'var(--font-mono)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--green)', marginBottom: 4 }}>{value}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1 }}>{label}</div>
                       </div>
                     ))}
@@ -148,7 +123,7 @@ export default function About() {
                         <tr key={m.name}>
                           <td>
                             <span style={{ fontWeight: 600, color: m.name === metrics.best_model ? 'var(--cyan)' : 'var(--text-primary)' }}>
-                              {m.name === metrics.best_model ? '🏆 ' : ''}{m.name}
+                              {m.name === metrics.best_model ? `${m.name} · deployed` : m.name}
                             </span>
                           </td>
                           <td style={{ color: 'var(--text-primary)' }}>{m.accuracy}%</td>
@@ -165,9 +140,9 @@ export default function About() {
               </div>
 
               <div style={{ marginTop: 12, display: 'flex', gap: 20, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                <span>📊 Training samples: <strong style={{ color: 'var(--cyan)' }}>{metrics.train_samples?.toLocaleString()}</strong></span>
-                <span>🧪 Test samples: <strong style={{ color: 'var(--cyan)' }}>{metrics.test_samples?.toLocaleString()}</strong></span>
-                <span>⚙ Features: <strong style={{ color: 'var(--cyan)' }}>{metrics.feature_count}</strong></span>
+                <span>Train: <strong style={{ color: 'var(--cyan)' }}>{metrics.train_samples?.toLocaleString()}</strong></span>
+                <span>Test: <strong style={{ color: 'var(--cyan)' }}>{metrics.test_samples?.toLocaleString()}</strong></span>
+                <span>Features: <strong style={{ color: 'var(--cyan)' }}>{metrics.feature_count}</strong></span>
               </div>
             </>
           )}
@@ -175,8 +150,8 @@ export default function About() {
 
         {/* Features Used */}
         <section style={{ marginBottom: 48 }}>
-          <h2 style={{ fontFamily: 'Orbitron, monospace', fontSize: '1.3rem', fontWeight: 700, marginBottom: 24 }}>
-            ⚙ Extracted URL Features
+          <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '1.3rem', fontWeight: 700, marginBottom: 24 }}>
+            Extracted URL features
           </h2>
           <div className="glass-card" style={{ padding: 28 }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -199,22 +174,24 @@ export default function About() {
 
         {/* Workflow */}
         <section style={{ marginBottom: 48 }}>
-          <h2 style={{ fontFamily: 'Orbitron, monospace', fontSize: '1.3rem', fontWeight: 700, marginBottom: 24 }}>
-            🔄 ML Pipeline Workflow
+          <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '1.3rem', fontWeight: 700, marginBottom: 24 }}>
+            Pipeline
           </h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-            {WORKFLOW.map(({ icon, step, desc }, i) => (
+            {WORKFLOW.map(({ n, step, desc }, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 0 }}>
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: 20, flexShrink: 0 }}>
                   <div style={{
-                    width: 48, height: 48,
-                    background: 'rgba(0,212,255,0.1)',
-                    border: '2px solid rgba(0,212,255,0.25)',
-                    borderRadius: '50%',
+                    width: 40, height: 40,
+                    background: 'rgba(62,224,197,0.08)',
+                    border: '1px solid var(--border)',
+                    borderRadius: 3,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '1.2rem',
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.72rem',
+                    color: 'var(--cyan)',
                   }}>
-                    {icon}
+                    {n}
                   </div>
                   {i < WORKFLOW.length - 1 && (
                     <div style={{ width: 2, flex: 1, minHeight: 32, background: 'rgba(0,212,255,0.15)', margin: '4px 0' }} />
@@ -231,8 +208,8 @@ export default function About() {
 
         {/* Tech Stack */}
         <section>
-          <h2 style={{ fontFamily: 'Orbitron, monospace', fontSize: '1.3rem', fontWeight: 700, marginBottom: 24 }}>
-            🛠 Technology Stack
+          <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '1.3rem', fontWeight: 700, marginBottom: 24 }}>
+            Stack
           </h2>
           <div className="grid-2">
             {TECH_STACK.map(({ category, items }) => (

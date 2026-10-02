@@ -26,6 +26,7 @@ CORS(app, resources={r"/api/*": {"origins": ["http://localhost:5173", "http://lo
 # ── Register Blueprints ────────────────────────────────────────────────────────
 app.register_blueprint(predict_bp)
 app.register_blueprint(history_bp)
+init_db()
 
 
 # ── Health check ───────────────────────────────────────────────────────────────
@@ -52,8 +53,8 @@ def server_error(e):
 
 # ── Startup ────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    print("🔧 Initializing database...")
+    print("Initializing database...")
     init_db()
-    print("✅ Database ready.")
-    print("🚀 Starting Flask API on http://localhost:5000")
+    print("Database ready.")
+    print("Starting Flask API on http://localhost:5000")
     app.run(host="0.0.0.0", port=5000, debug=True)

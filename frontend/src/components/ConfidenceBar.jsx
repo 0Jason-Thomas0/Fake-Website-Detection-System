@@ -23,7 +23,7 @@ export default function ConfidenceBar({ confidence, prediction }) {
           Confidence
         </span>
         <span style={{
-          fontFamily: 'Orbitron, monospace',
+          fontFamily: 'var(--font-mono)',
           fontWeight: 700,
           fontSize: '1.1rem',
           color: isFake ? 'var(--red)' : 'var(--green)',

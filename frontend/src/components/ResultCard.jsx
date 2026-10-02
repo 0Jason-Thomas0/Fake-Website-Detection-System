@@ -1,17 +1,19 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import RiskBadge from './RiskBadge'
 import ConfidenceBar from './ConfidenceBar'
 
 /**
  * ResultCard — Full prediction result display
- * Props: result = { prediction, confidence, risk, reasons, features, model_used }
+ * Props: result = { prediction, confidence, risk, reasons, features, model_used, id }
  */
 export default function ResultCard({ result }) {
   const [showFeatures, setShowFeatures] = useState(false)
 
   if (!result) return null
 
-  const { prediction, confidence, risk, reasons, features, model_used } = result
+  const { prediction, confidence, risk, features, model_used, id } = result
+  const reasons = result.reasons || []
   const isFake = prediction === 'Fake'
 
   const FEATURE_LABELS = {
@@ -54,20 +56,14 @@ export default function ResultCard({ result }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
           {/* Icon */}
           <div style={{
-            width: 64, height: 64,
-            borderRadius: '50%',
-            background: isFake
-              ? 'radial-gradient(circle, rgba(255,51,102,0.2), rgba(255,51,102,0.05))'
-              : 'radial-gradient(circle, rgba(0,255,136,0.2), rgba(0,255,136,0.05))',
-            border: `2px solid ${isFake ? 'rgba(255,51,102,0.5)' : 'rgba(0,255,136,0.5)'}`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1.8rem',
-          }}>
-            {isFake ? '⚠' : '✓'}
-          </div>
+            width: 10, height: 10,
+            borderRadius: 1,
+            background: isFake ? 'var(--red)' : 'var(--green)',
+            marginTop: 8,
+          }} />
           <div>
             <div style={{
-              fontFamily: 'Orbitron, monospace',
+              fontFamily: 'var(--font-mono)',
               fontSize: '1.6rem',
               fontWeight: 700,
               color: isFake ? 'var(--red)' : 'var(--green)',
@@ -95,7 +91,6 @@ export default function ResultCard({ result }) {
           display: 'flex', alignItems: 'center', gap: 8,
           marginBottom: 24, fontSize: '0.82rem', color: 'var(--text-muted)',
         }}>
-          <span>🤖</span>
           <span>Model: <strong style={{ color: 'var(--cyan)' }}>{model_used}</strong></span>
         </div>
 
@@ -109,18 +104,30 @@ export default function ResultCard({ result }) {
             color: 'var(--text-muted)',
             marginBottom: 12,
           }}>
-            {isFake ? '⚠ Detected Risk Factors' : '✓ Safety Analysis'}
+            {isFake ? 'Risk factors' : 'Safety checks'}
           </h4>
           {reasons.map((reason, i) => (
             <div key={i} className={`reason-item ${isFake ? 'danger' : 'safe'} fade-in-up`}
               style={{ animationDelay: `${i * 0.08}s`, opacity: 0 }}>
-              <span style={{ fontSize: '1rem', flexShrink: 0 }}>
-                {isFake ? '⚡' : '✓'}
-              </span>
               <span>{reason}</span>
             </div>
           ))}
         </div>
+
+        {id && (
+          <Link
+            to={`/history/${id}`}
+            className="btn-primary"
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              textDecoration: 'none',
+              marginBottom: 16,
+            }}
+          >
+            Open full report →
+          </Link>
+        )}
 
         {/* Feature Toggle */}
         <button

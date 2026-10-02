@@ -135,14 +135,14 @@ def main():
     # ── Define Models ──────────────────────────────────────────────
     models = {
         "Random Forest": RandomForestClassifier(
-            n_estimators=200, max_depth=None,
-            min_samples_split=2, random_state=42, n_jobs=-1
+            n_estimators=120, max_depth=12,
+            min_samples_leaf=4, random_state=42, n_jobs=-1
         ),
         "Decision Tree": DecisionTreeClassifier(
-            max_depth=10, min_samples_split=5, random_state=42
+            max_depth=6, min_samples_split=12, min_samples_leaf=8, random_state=42
         ),
         "Logistic Regression": LogisticRegression(
-            max_iter=1000, C=1.0, random_state=42
+            max_iter=1000, C=0.4, random_state=42
         ),
     }
 
@@ -177,6 +177,9 @@ def main():
     # ── Save Model & Scaler ────────────────────────────────────────
     joblib.dump(best_model, MODEL_OUT)
     joblib.dump(scaler, SCALER_OUT)
+    joblib.dump(trained_models["Random Forest"], os.path.join(SCRIPT_DIR, "rf_model.pkl"))
+    joblib.dump(trained_models["Decision Tree"], os.path.join(SCRIPT_DIR, "dt_model.pkl"))
+    joblib.dump(trained_models["Logistic Regression"], os.path.join(SCRIPT_DIR, "lr_model.pkl"))
 
     # Save feature column names for validation
     feature_names_path = os.path.join(SCRIPT_DIR, "feature_names.json")
@@ -185,6 +188,7 @@ def main():
 
     print(f"\n[OK] Model saved  : {MODEL_OUT}")
     print(f"[OK] Scaler saved : {SCALER_OUT}")
+    print("[OK] Comparison models saved: rf_model.pkl, dt_model.pkl, lr_model.pkl")
 
     # ── Save Metrics JSON for Frontend ────────────────────────────
     summary = {

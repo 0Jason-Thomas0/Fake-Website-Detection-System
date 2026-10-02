@@ -35,10 +35,19 @@ def init_db():
                 risk_level  TEXT    NOT NULL,
                 reasons     TEXT    NOT NULL,
                 scan_date   TEXT    NOT NULL,
-                scan_time   TEXT    NOT NULL
+                scan_time   TEXT    NOT NULL,
+                features    TEXT,
+                model_used  TEXT
             )
             """
         )
+        existing = {
+            row[1] for row in conn.execute("PRAGMA table_info(predictions)").fetchall()
+        }
+        if "features" not in existing:
+            conn.execute("ALTER TABLE predictions ADD COLUMN features TEXT")
+        if "model_used" not in existing:
+            conn.execute("ALTER TABLE predictions ADD COLUMN model_used TEXT")
         conn.commit()
 
 

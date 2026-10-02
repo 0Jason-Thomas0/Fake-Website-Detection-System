@@ -1,11 +1,41 @@
 import { useState, useEffect } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { getHistory, deleteOne, clearAll } from '../api/client'
 import RiskBadge from '../components/RiskBadge'
 
+const PRED_FILTERS = [
+  { value: '', label: 'All' },
+  { value: 'Fake', label: 'Fake' },
+  { value: 'Legitimate', label: 'Legitimate' },
+]
+
+const RISK_FILTERS = [
+  { value: '', label: 'All risk' },
+  { value: 'Low', label: 'Low' },
+  { value: 'Medium', label: 'Medium' },
+  { value: 'High', label: 'High' },
+]
+
+function chipStyle(active, danger) {
+  return {
+    padding: '6px 14px',
+    borderRadius: 20,
+    fontSize: '0.8rem',
+    fontWeight: 600,
+    cursor: 'pointer',
+    background: active ? 'rgba(0,212,255,0.12)' : 'transparent',
+    border: `1px solid ${active ? 'rgba(0,212,255,0.45)' : 'rgba(0,212,255,0.2)'}`,
+    color: danger ? 'var(--red)' : active ? 'var(--cyan)' : 'var(--text-secondary)',
+  }
+}
+
 export default function History() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const prediction = searchParams.get('prediction') || ''
+  const risk = searchParams.get('risk') || ''
   const [records, setRecords] = useState([])
   const [filtered, setFiltered] = useState([])
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState(searchParams.get('q') || '')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [toast, setToast] = useState(null)
@@ -16,12 +46,22 @@ export default function History() {
     setTimeout(() => setToast(null), 3000)
   }
 
+  const setFilter = (key, value) => {
+    const next = new URLSearchParams(searchParams)
+    if (value) next.set(key, value)
+    else next.delete(key)
+    setSearchParams(next)
+  }
+
   const fetchHistory = async () => {
     setLoading(true)
     try {
-      const res = await getHistory()
+      const res = await getHistory({
+        prediction: prediction || undefined,
+        risk: risk || undefined,
+      })
       setRecords(res.data)
-      setFiltered(res.data)
+      setError('')
     } catch {
       setError('Could not load history. Make sure the backend is running.')
     } finally {
@@ -29,7 +69,7 @@ export default function History() {
     }
   }
 
-  useEffect(() => { fetchHistory() }, [])
+  useEffect(() => { fetchHistory() }, [prediction, risk])
 
   useEffect(() => {
     const q = search.toLowerCase()
@@ -69,22 +109,13 @@ export default function History() {
   return (
     <div style={{ paddingTop: 100, paddingBottom: 80, minHeight: '100vh' }}>
       <div className="container">
-        {/* Header */}
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 40 }}>
           <div>
-            <div style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8,
-              padding: '6px 16px', marginBottom: 16,
-              background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.2)',
-              borderRadius: 100, fontSize: '0.78rem', fontWeight: 600,
-              color: 'var(--cyan)', letterSpacing: 2, textTransform: 'uppercase',
-            }}>
-              📋 Prediction History
-            </div>
-            <h1 style={{ fontFamily: 'Orbitron, monospace', fontSize: '2rem', fontWeight: 800, marginBottom: 8 }}>
-              Scan <span className="gradient-text">History</span>
+            <div className="kicker">Saved scans</div>
+            <h1 style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.03em', marginBottom: 8 }}>
+              History
             </h1>
-            <p style={{ color: 'var(--text-secondary)' }}>All previously scanned URLs and their AI predictions.</p>
+            <p style={{ color: 'var(--text-secondary)' }}>Every classified URL on this machine, with filters.</p>
           </div>
 
           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
@@ -93,13 +124,12 @@ export default function History() {
             </button>
             {records.length > 0 && (
               <button className="btn-danger" onClick={() => setConfirmClear(true)} id="clear-history-btn">
-                🗑 Clear All
+                Clear all
               </button>
             )}
           </div>
         </div>
 
-        {/* Stats Strip */}
         {records.length > 0 && (
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginBottom: 28 }}>
             {[
@@ -108,14 +138,35 @@ export default function History() {
               { label: 'Legitimate',  value: LEGIT,          color: 'var(--green)' },
             ].map(({ label, value, color }) => (
               <div key={label} className="glass-card" style={{ padding: '16px 24px', display: 'flex', gap: 12, alignItems: 'center' }}>
-                <span style={{ fontFamily: 'Orbitron, monospace', fontSize: '1.4rem', fontWeight: 700, color }}>{value}</span>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '1.4rem', fontWeight: 700, color }}>{value}</span>
                 <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{label}</span>
               </div>
             ))}
           </div>
         )}
 
-        {/* Search */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
+          {PRED_FILTERS.map(f => (
+            <button
+              key={f.label}
+              onClick={() => setFilter('prediction', f.value)}
+              style={chipStyle(prediction === f.value, f.value === 'Fake')}
+            >
+              {f.label}
+            </button>
+          ))}
+          <span style={{ width: 8 }} />
+          {RISK_FILTERS.map(f => (
+            <button
+              key={f.label}
+              onClick={() => setFilter('risk', f.value)}
+              style={chipStyle(risk === f.value)}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+
         <div style={{ marginBottom: 24 }}>
           <input
             id="history-search-input"
@@ -128,7 +179,6 @@ export default function History() {
           />
         </div>
 
-        {/* Table */}
         {loading ? (
           <div className="flex-center" style={{ height: 300 }}>
             <div>
@@ -138,15 +188,15 @@ export default function History() {
           </div>
         ) : error ? (
           <div className="glass-card" style={{ padding: 40, textAlign: 'center', color: 'var(--red)', border: '1px solid rgba(255,51,102,0.2)' }}>
-            ⚠ {error}
+            {error}
           </div>
         ) : filtered.length === 0 ? (
           <div className="glass-card empty-state">
-            <div style={{ fontSize: '4rem', marginBottom: 16 }}>📋</div>
+            <div className="kicker">Empty</div>
             <h3 style={{ fontSize: '1.1rem', color: 'var(--text-secondary)', marginBottom: 8 }}>
-              {search ? 'No results found' : 'No scan history yet'}
+              {search || prediction || risk ? 'No results found' : 'No scan history yet'}
             </h3>
-            <p>{search ? 'Try a different search term.' : 'Go to the Detection page to scan your first URL.'}</p>
+            <p>{search || prediction || risk ? 'Try a different filter or search term.' : 'Scan a URL from Home to start building history.'}</p>
           </div>
         ) : (
           <div className="glass-card" style={{ overflow: 'hidden' }}>
@@ -168,16 +218,22 @@ export default function History() {
                     <tr key={row.id} className="fade-in-up" style={{ animationDelay: `${i * 0.03}s`, opacity: 0 }}>
                       <td style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{row.id}</td>
                       <td style={{ maxWidth: 260 }}>
-                        <div style={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          color: 'var(--text-primary)',
-                          fontSize: '0.85rem',
-                          maxWidth: 260,
-                        }} title={row.url}>
+                        <Link
+                          to={`/history/${row.id}`}
+                          title={row.url}
+                          style={{
+                            display: 'block',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            color: 'var(--cyan)',
+                            fontSize: '0.85rem',
+                            maxWidth: 260,
+                            textDecoration: 'none',
+                          }}
+                        >
                           {row.url}
-                        </div>
+                        </Link>
                       </td>
                       <td>
                         <span style={{
@@ -185,7 +241,7 @@ export default function History() {
                           color: row.prediction === 'Fake' ? 'var(--red)' : 'var(--green)',
                           fontSize: '0.88rem',
                         }}>
-                          {row.prediction === 'Fake' ? '⚠ Fake' : '✓ Legitimate'}
+                          {row.prediction}
                         </span>
                       </td>
                       <td>
@@ -226,7 +282,7 @@ export default function History() {
                             transition: 'all 0.2s',
                           }}
                         >
-                          🗑
+                          Del
                         </button>
                       </td>
                     </tr>
@@ -238,7 +294,6 @@ export default function History() {
         )}
       </div>
 
-      {/* Confirm Clear Modal */}
       {confirmClear && (
         <div style={{
           position: 'fixed', inset: 0,
@@ -247,7 +302,7 @@ export default function History() {
           zIndex: 9999, padding: 24,
         }}>
           <div className="glass-card" style={{ padding: 36, maxWidth: 420, width: '100%', textAlign: 'center' }}>
-            <div style={{ fontSize: '3rem', marginBottom: 16 }}>⚠️</div>
+            <div className="kicker">Confirm</div>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 700, marginBottom: 12 }}>Clear All History?</h3>
             <p style={{ color: 'var(--text-secondary)', marginBottom: 28, fontSize: '0.9rem' }}>
               This will permanently delete all {records.length} scan records. This action cannot be undone.
@@ -260,10 +315,9 @@ export default function History() {
         </div>
       )}
 
-      {/* Toast */}
       {toast && (
         <div className={`toast toast-${toast.type}`}>
-          {toast.type === 'success' ? '✓' : '⚠'} {toast.msg}
+          {toast.msg}
         </div>
       )}
     </div>

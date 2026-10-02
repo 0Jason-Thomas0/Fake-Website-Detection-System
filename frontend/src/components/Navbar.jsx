@@ -2,11 +2,28 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 const NAV_LINKS = [
-  { to: '/',        label: 'Home',       icon: '⌂' },
-  { to: '/detect',  label: 'Detect',     icon: '🔍' },
-  { to: '/history', label: 'History',    icon: '📋' },
-  { to: '/about',   label: 'About',      icon: 'ℹ' },
+  { to: '/',          label: 'Home' },
+  { to: '/dashboard', label: 'Dashboard' },
+  { to: '/batch',     label: 'Batch' },
+  { to: '/lab',       label: 'Lab' },
+  { to: '/history',   label: 'History' },
+  { to: '/about',     label: 'About' },
 ]
+
+function isActivePath(pathname, to) {
+  if (to === '/') return pathname === '/'
+  return pathname === to || pathname.startsWith(`${to}/`)
+}
+
+function Mark() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true">
+      <rect x="1" y="1" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M6 18 L14 7 L22 18" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M9.5 18 H18.5" stroke="currentColor" strokeWidth="1.6" />
+    </svg>
+  )
+}
 
 export default function Navbar() {
   const location = useLocation()
@@ -24,12 +41,9 @@ export default function Navbar() {
       position: 'fixed',
       top: 0, left: 0, right: 0,
       zIndex: 1000,
-      background: scrolled
-        ? 'rgba(6,13,31,0.95)'
-        : 'rgba(6,13,31,0.7)',
-      backdropFilter: 'blur(20px)',
-      borderBottom: '1px solid rgba(0,212,255,0.1)',
-      transition: 'all 0.3s ease',
+      background: scrolled ? 'rgba(7,9,14,0.94)' : 'rgba(7,9,14,0.72)',
+      backdropFilter: 'blur(16px)',
+      borderBottom: '1px solid var(--border)',
       padding: '0 24px',
     }}>
       <div style={{
@@ -38,122 +52,92 @@ export default function Navbar() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        height: 70,
+        height: 64,
       }}>
-        {/* Logo */}
-        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <div style={{
-            width: 38, height: 38,
-            borderRadius: 10,
-            background: 'linear-gradient(135deg, #00d4ff, #0080ff)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '1.1rem',
-            boxShadow: '0 0 20px rgba(0,212,255,0.4)',
-          }}>
-            🛡
-          </div>
+        <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 12, color: 'var(--cyan)' }}>
+          <Mark />
           <div>
             <div style={{
-              fontFamily: 'Orbitron, monospace',
+              fontFamily: 'var(--font-mono)',
               fontWeight: 700,
-              fontSize: '0.95rem',
-              color: '#e8f4fd',
-              letterSpacing: 1,
+              fontSize: '0.82rem',
+              color: 'var(--text-primary)',
+              letterSpacing: '0.12em',
             }}>
-              PHISHGUARD <span style={{ color: '#00d4ff' }}>AI</span>
+              PHISHGUARD
             </div>
-            <div style={{ fontSize: '0.65rem', color: '#4a6a8a', letterSpacing: 2, textTransform: 'uppercase' }}>
-              Fake Website Detector
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.6rem', color: 'var(--text-muted)', letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+              URL classifier
             </div>
           </div>
         </Link>
 
-        {/* Desktop Links */}
-        <div style={{ display: 'flex', gap: 4, alignItems: 'center' }} className="desktop-nav">
+        <div style={{ display: 'flex', gap: 2, alignItems: 'center' }} className="desktop-nav">
           {NAV_LINKS.map(({ to, label }) => {
-            const active = location.pathname === to
+            const active = isActivePath(location.pathname, to)
             return (
               <Link key={to} to={to} style={{
-                padding: '8px 18px',
-                borderRadius: 8,
+                padding: '7px 11px',
+                borderRadius: 3,
                 textDecoration: 'none',
                 fontWeight: 600,
-                fontSize: '0.9rem',
-                transition: 'all 0.2s ease',
-                color: active ? '#00d4ff' : '#7fa8c9',
-                background: active ? 'rgba(0,212,255,0.1)' : 'transparent',
-                border: active ? '1px solid rgba(0,212,255,0.3)' : '1px solid transparent',
+                fontSize: '0.8rem',
+                color: active ? 'var(--cyan)' : 'var(--text-secondary)',
+                background: active ? 'rgba(62,224,197,0.08)' : 'transparent',
+                border: active ? '1px solid var(--border)' : '1px solid transparent',
               }}>
                 {label}
               </Link>
             )
           })}
-
-          <Link to="/detect" style={{
-            marginLeft: 12,
-            padding: '9px 20px',
-            background: 'linear-gradient(135deg, #00d4ff, #0080ff)',
-            color: '#060d1f',
-            fontWeight: 700,
-            fontSize: '0.88rem',
-            borderRadius: 8,
-            textDecoration: 'none',
-            transition: 'all 0.2s ease',
-            boxShadow: '0 0 15px rgba(0,212,255,0.3)',
-          }}>
-            Scan URL →
+          <Link to="/detect" className="btn-primary" style={{ marginLeft: 10, padding: '8px 14px', fontSize: '0.78rem' }}>
+            Scan URL
           </Link>
         </div>
 
-        {/* Mobile Hamburger */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
           style={{
             display: 'none',
             background: 'none',
-            border: '1px solid rgba(0,212,255,0.3)',
-            color: '#00d4ff',
-            padding: '8px 12px',
-            borderRadius: 8,
+            border: '1px solid var(--border)',
+            color: 'var(--cyan)',
+            padding: '7px 10px',
+            borderRadius: 3,
             cursor: 'pointer',
-            fontSize: '1.2rem',
+            fontFamily: 'var(--font-mono)',
           }}
           className="hamburger"
           aria-label="Toggle navigation menu"
         >
-          {menuOpen ? '✕' : '☰'}
+          {menuOpen ? 'Close' : 'Menu'}
         </button>
       </div>
 
-      {/* Mobile Menu */}
       {menuOpen && (
-        <div style={{
-          background: 'rgba(6,13,31,0.98)',
-          borderTop: '1px solid rgba(0,212,255,0.1)',
-          padding: '16px 24px 24px',
-        }}>
-          {NAV_LINKS.map(({ to, label, icon }) => (
+        <div style={{ borderTop: '1px solid var(--border)', padding: '8px 0 16px' }}>
+          {NAV_LINKS.map(({ to, label }) => (
             <Link key={to} to={to}
               onClick={() => setMenuOpen(false)}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                padding: '14px 0',
+                display: 'block',
+                padding: '12px 0',
                 textDecoration: 'none',
-                color: location.pathname === to ? '#00d4ff' : '#7fa8c9',
+                color: isActivePath(location.pathname, to) ? 'var(--cyan)' : 'var(--text-secondary)',
                 fontWeight: 600,
-                borderBottom: '1px solid rgba(0,212,255,0.05)',
+                borderBottom: '1px solid rgba(62,224,197,0.06)',
               }}>
-              <span>{icon}</span>
               {label}
             </Link>
           ))}
+          <Link to="/detect" onClick={() => setMenuOpen(false)} className="btn-primary" style={{ marginTop: 12 }}>
+            Scan URL
+          </Link>
         </div>
       )}
 
       <style>{`
-        @media (max-width: 768px) {
+        @media (max-width: 1024px) {
           .desktop-nav { display: none !important; }
           .hamburger { display: flex !important; }
         }

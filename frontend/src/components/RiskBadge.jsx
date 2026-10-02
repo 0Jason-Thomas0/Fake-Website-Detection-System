@@ -1,19 +1,9 @@
-/**
- * RiskBadge — Color-coded risk level indicator
- * Props: level = "Low" | "Medium" | "High"
- */
 export default function RiskBadge({ level }) {
   const config = {
-    Low:    { cls: 'badge badge-low',    icon: '✓', label: 'Low Risk' },
-    Medium: { cls: 'badge badge-medium', icon: '⚠', label: 'Medium Risk' },
-    High:   { cls: 'badge badge-high',   icon: '✕', label: 'High Risk' },
+    Low:    { cls: 'badge badge-low',    label: 'Low' },
+    Medium: { cls: 'badge badge-medium', label: 'Medium' },
+    High:   { cls: 'badge badge-high',   label: 'High' },
   }
-  const { cls, icon, label } = config[level] || config.High
-
-  return (
-    <span className={cls}>
-      <span>{icon}</span>
-      {label}
-    </span>
-  )
+  const { cls, label } = config[level] || config.High
+  return <span className={cls}>{label}</span>
 }
